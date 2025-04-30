@@ -5,9 +5,6 @@ locals {
   database_count    = var.enabled == true && (var.type == "database" || var.type == "public-private-database") ? length(var.availability_zones) : 0
 }
 
-##-----------------------------------------------------------------------------
-## Below resource will deploy public subnets and its related components in aws environment.
-##-----------------------------------------------------------------------------
 resource "aws_subnet" "public" {
   count                                          = local.public_count
   vpc_id                                         = var.vpc_id
@@ -43,9 +40,6 @@ resource "aws_subnet" "public" {
   }
 }
 
-##-----------------------------------------------------------------------------
-## Below resource will deploy network acl and its rules that will be attached to public subnets.
-##-----------------------------------------------------------------------------
 resource "aws_network_acl" "public" {
   count      = var.enabled && local.public_count > 0 && var.enable_public_acl && (var.type == "public" || var.type == "public-private" || var.type == "public-private-database") ? 1 : 0
   vpc_id     = var.vpc_id
@@ -95,9 +89,6 @@ resource "aws_network_acl_rule" "public_outbound" {
   ipv6_cidr_block = lookup(var.public_outbound_acl_rules[count.index], "ipv6_cidr_block", null)
 }
 
-##-----------------------------------------------------------------------------
-## Below resources will deploy route table and routes for public subnet and will be associated to public subnets.
-##-----------------------------------------------------------------------------
 resource "aws_route_table" "public" {
   count  = local.public_count
   vpc_id = var.vpc_id
@@ -142,9 +133,7 @@ resource "aws_route_table_association" "public" {
     aws_route_table.public,
   ]
 }
-##-----------------------------------------------------------------------------
-## Below resource will deploy flow logs for public subnet.
-##-----------------------------------------------------------------------------
+
 resource "aws_flow_log" "public_subnet_flow_log" {
   count                    = var.enabled && var.enable_flow_log && local.public_count > 0 ? 1 : 0
   log_destination_type     = var.flow_log_destination_type
@@ -174,10 +163,6 @@ resource "aws_flow_log" "public_subnet_flow_log" {
   )
 }
 
-
-##-----------------------------------------------------------------------------
-## Below resource will deploy private subnets and its related components in aws environment.
-##-----------------------------------------------------------------------------
 resource "aws_subnet" "private" {
   count                                          = local.private_count
   vpc_id                                         = var.vpc_id
@@ -208,10 +193,6 @@ resource "aws_subnet" "private" {
   )
 }
 
-
-##-----------------------------------------------------------------------------
-## Below resource will deploy network acl and its rules that will be attached to private subnets.
-##-----------------------------------------------------------------------------
 resource "aws_network_acl" "private" {
   count      = var.enabled && var.enable_private_acl && (var.type == "private" || var.type == "public-private" || var.type == "public-private-database") ? 1 : 0
   vpc_id     = var.vpc_id
@@ -264,9 +245,6 @@ resource "aws_network_acl_rule" "private_outbound" {
   ipv6_cidr_block = lookup(var.private_outbound_acl_rules[count.index], "ipv6_cidr_block", null)
 }
 
-##-----------------------------------------------------------------------------
-## Below resources will deploy route table and routes for private subnet and will be associated to private subnets.
-##-----------------------------------------------------------------------------
 resource "aws_route_table" "private" {
   count  = local.private_count
   vpc_id = var.vpc_id
@@ -283,7 +261,6 @@ resource "aws_route_table" "private" {
   )
 }
 
-
 resource "aws_route_table_association" "private" {
   count          = local.private_count
   subnet_id      = element(aws_subnet.private[*].id, count.index)
@@ -298,9 +275,6 @@ resource "aws_route" "nat_gateway" {
   depends_on             = [aws_route_table.private]
 }
 
-##----------------------------------------------------------------------------------
-## Below resource will create Elastic IP (EIP) for nat gateway.
-##----------------------------------------------------------------------------------
 resource "aws_eip" "private" {
   count  = local.nat_gateway_count
   domain = "vpc"
@@ -320,9 +294,6 @@ resource "aws_eip" "private" {
   }
 }
 
-##----------------------------------------------------------------------------------
-## Below resource will deploy nat gateway for private subnets.
-##----------------------------------------------------------------------------------
 resource "aws_nat_gateway" "private" {
   count         = local.nat_gateway_count
   allocation_id = element(aws_eip.private[*].id, count.index)
@@ -339,10 +310,6 @@ resource "aws_nat_gateway" "private" {
   )
 }
 
-
-##-----------------------------------------------------------------------------
-## Below resource will deploy flow logs for private subnet.
-##-----------------------------------------------------------------------------
 resource "aws_flow_log" "private_subnet_flow_log" {
   count                      = var.enabled && var.enable_flow_log && local.private_count > 0 ? 1 : 0
   log_destination_type       = var.flow_log_destination_type
@@ -354,8 +321,8 @@ resource "aws_flow_log" "private_subnet_flow_log" {
   max_aggregation_interval   = var.flow_log_max_aggregation_interval
   deliver_cross_account_role = var.deliver_cross_account_role # Cross-account role
 
-  eni_id             = var.eni_id             # Added ENI support
-  transit_gateway_id = var.transit_gateway_id # Added Transit Gateway ID
+  eni_id             = var.eni_id
+  transit_gateway_id = var.transit_gateway_id
 
   dynamic "destination_options" {
     for_each = var.flow_log_destination_type == "s3" ? [true] : []
@@ -375,9 +342,6 @@ resource "aws_flow_log" "private_subnet_flow_log" {
 }
 
 ##################database
-##-----------------------------------------------------------------------------
-## Below resource will deploy public subnets and its related components in aws environment.
-##-----------------------------------------------------------------------------
 resource "aws_subnet" "database" {
   count                                          = local.database_count
   vpc_id                                         = var.vpc_id
@@ -414,10 +378,6 @@ resource "aws_subnet" "database" {
   }
 }
 
-##-----------------------------------------------------------------------------
-## Below resource will deploy network acl and its rules that will be attached to public subnets.
-##-----------------------------------------------------------------------------
-
 #tfsec:ignore:aws-ec2-no-excessive-port-access
 resource "aws_network_acl" "database" {
   count      = var.enabled && local.database_count > 0 && var.enable_database_acl && (var.type == "database" || var.type == "public-private-database") ? 1 : 0
@@ -436,7 +396,6 @@ resource "aws_network_acl" "database" {
 
   depends_on = [aws_subnet.database]
 }
-
 
 #tfsec:ignore:aws-ec2-no-public-ingress-acl
 #tfsec:ignore:aws-ec2-no-excessive-port-access
@@ -471,9 +430,6 @@ resource "aws_network_acl_rule" "database_outbound" {
   ipv6_cidr_block = lookup(var.database_outbound_acl_rules[count.index], "ipv6_cidr_block", null)
 }
 
-##-----------------------------------------------------------------------------
-## Below resources will deploy route table and routes for public subnet and will be associated to public subnets.
-##-----------------------------------------------------------------------------
 resource "aws_route_table" "database" {
   count  = local.database_count
   vpc_id = var.vpc_id
@@ -490,7 +446,6 @@ resource "aws_route_table" "database" {
   )
 }
 
-
 resource "aws_route_table_association" "database" {
   count          = local.database_count
   subnet_id      = element(aws_subnet.database[*].id, count.index)
@@ -501,9 +456,6 @@ resource "aws_route_table_association" "database" {
   ]
 }
 
-##-----------------------------------------------------------------------------
-## Below resource will deploy flow logs for public subnet.
-##-----------------------------------------------------------------------------
 resource "aws_flow_log" "database_subnet_flow_log" {
   count                    = var.enabled && var.enable_flow_log && local.database_count > 0 ? 1 : 0
   log_destination_type     = var.flow_log_destination_type
@@ -524,11 +476,11 @@ resource "aws_flow_log" "database_subnet_flow_log" {
   }
 
   # Optional arguments
-  deliver_cross_account_role    = var.flow_log_deliver_cross_account_role    # Added optional deliver_cross_account_role
-  eni_id                        = var.flow_log_eni_id                        # Added optional eni_id
-  vpc_id                        = var.flow_log_vpc_id                        # Added optional vpc_id
-  transit_gateway_id            = var.flow_log_transit_gateway_id            # Added optional transit_gateway_id
-  transit_gateway_attachment_id = var.flow_log_transit_gateway_attachment_id # Added optional transit_gateway_attachment_id
+  deliver_cross_account_role    = var.flow_log_deliver_cross_account_role
+  eni_id                        = var.flow_log_eni_id
+  vpc_id                        = var.flow_log_vpc_id
+  transit_gateway_id            = var.flow_log_transit_gateway_id
+  transit_gateway_attachment_id = var.flow_log_transit_gateway_attachment_id
 
   tags = merge(
     var.tags, # Agar aap globally tags use kar rahe hain to

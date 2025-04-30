@@ -49,17 +49,21 @@ output "private_tags" {
 }
 
 output "public_private_database_subnet_id" {
-  value = module.subnet.database_subnet_id
+  value       = module.subnet.database_subnet_id
+  description = "The ID of the public/private database subnet."
 }
 
 output "public_private_database_subnet_arn" {
-  value = module.subnet.database_subnet_arn
+  value       = module.subnet.database_subnet_arn
+  description = "The ARN of the public/private database subnet."
 }
 
 output "public_private_database_subnet_tags_all" {
-  value = module.subnet.public_private_subnet_tags_all
+  value       = module.subnet.public_private_subnet_tags_all
+  description = "All tags associated with the public/private database subnet."
 }
 
 output "public_private_database_subnet_owner_id" {
-  value = module.subnet.database_subnet_owner_id
+  value       = module.subnet.database_subnet_owner_id
+  description = "The AWS account ID that owns the public/private database subnet."
 }

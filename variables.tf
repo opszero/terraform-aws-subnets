@@ -408,7 +408,7 @@ variable "database_outbound_acl_rules" {
 
 variable "enable_lni_at_device_index" {
   type        = number
-  default     = null # Default to null (disabled unless specified)
+  default     = null
   description = "Indicates the device position for local network interfaces in this subnet. This is used for AWS Outposts only."
 }
 

@@ -2,20 +2,18 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-##-----------------------------------------------------------------------------
+##===========================================================================
 ## Vpc Module call.
-##-----------------------------------------------------------------------------
+##===========================================================================
 module "vpc" {
-  source      = "https://github.com/opszero/terraform-aws-vpc.git"
-  name        = "app"
-  environment = "test"
-  cidr_block  = "10.0.0.0/16"
-
+  source     = "https://github.com/opszero/terraform-aws-subnet.git"
+  name       = "test"
+  cidr_block = "10.0.0.0/16"
 }
 
-##-----------------------------------------------------------------------------
+##===========================================================================
 ## Subnet Module call.
-##---------------------------------------------------------------------------
+##===========================================================================
 module "private-subnets" {
   source              = "./../../"
   name                = "app"
@@ -27,6 +25,6 @@ module "private-subnets" {
   cidr_block          = module.vpc.vpc_cidr_block
   ipv6_cidr_block     = module.vpc.ipv6_cidr_block
   ipv4_private_cidrs  = ["10.0.3.0/24"]
-  public_subnet_ids   = ["subnet-01ef5b61799cc9943", "subnet-0542749d02b264baa"] # Use the output here
+  public_subnet_ids   = ["subnet-01ef5b61799cc9943", "subnet-0542749d02b264baa"]
   enable_ipv6         = false
 }

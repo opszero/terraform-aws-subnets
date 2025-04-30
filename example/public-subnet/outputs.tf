@@ -19,13 +19,16 @@ output "public_subnet_id" {
 }
 
 output "public_subnet_arn" {
-  value = module.subnet.public_subnet_arn
+  value       = module.subnet.public_subnet_arn
+  description = "The ARN of the public subnet."
 }
 
 output "public_subnet_tags_all" {
-  value = module.subnet.public_subnet_tags_all
+  value       = module.subnet.public_subnet_tags_all
+  description = "All tags associated with the public subnet."
 }
 
 output "public_subnet_owner_id" {
-  value = module.subnet.public_subnet_owner_id
+  value       = module.subnet.public_subnet_owner_id
+  description = "The AWS account ID that owns the public subnet."
 }
