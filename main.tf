@@ -96,7 +96,7 @@ resource "aws_route_table" "public" {
   tags = merge(
     var.tags,
     {
-      "Name"        = format("public%s%s-rt", var.delimiter, element(var.availability_zones, count.index))
+      "Name"        = format("%s-public-%s%s-rt", var.name, var.delimiter, element(var.availability_zones, count.index))
       "AZ"          = element(var.availability_zones, count.index)
       "Type"        = "public"
       "Environment" = var.environment
@@ -156,7 +156,7 @@ resource "aws_flow_log" "public_subnet_flow_log" {
   tags = merge(
     var.tags,
     {
-      "Name"        = format("%s-subnet-flowlog", var.name)
+      "Name"        = format("%s-public-subnet-flowlog", var.name)
       "Environment" = var.environment
       "ManagedBy"   = var.managedby
     }
@@ -183,7 +183,7 @@ resource "aws_subnet" "private" {
   tags = merge(
     var.tags,
     {
-      "Name"        = format("%s%s%s", var.name, var.delimiter, element(var.availability_zones, count.index))
+      "Name"        = format("private-subnet%s%s", var.delimiter, element(var.availability_zones, count.index))
       "AZ"          = element(var.availability_zones, count.index)
       "Type"        = "private"
       "Environment" = var.environment
@@ -201,7 +201,7 @@ resource "aws_network_acl" "private" {
   tags = merge(
     var.tags,
     {
-      "Name"        = format("%s%s%s-nacl", var.name, var.delimiter, element(var.availability_zones, count.index))
+      "Name"        = format("private%s%s-nacl", var.delimiter, element(var.availability_zones, count.index))
       "AZ"          = element(var.availability_zones, count.index)
       "Type"        = "private"
       "Environment" = var.environment
@@ -252,7 +252,7 @@ resource "aws_route_table" "private" {
   tags = merge(
     var.tags,
     {
-      "Name"        = format("%s%s%s-rt", var.name, var.delimiter, element(var.availability_zones, count.index))
+      "Name"        = format("private%s%s-rt", var.delimiter, element(var.availability_zones, count.index))
       "AZ"          = element(var.availability_zones, count.index)
       "Type"        = "private"
       "Environment" = var.environment
@@ -282,7 +282,7 @@ resource "aws_eip" "private" {
   tags = merge(
     var.tags, # Agar aap globally tags use kar rahe hain to
     {
-      "Name"        = format("%s%s%s-eip", var.name, var.delimiter, element(var.availability_zones, count.index))
+      "Name"        = format("%s-private-%s%s-eip", var.name, var.delimiter, element(var.availability_zones, count.index))
       "Type"        = "private"
       "Environment" = var.environment
       "ManagedBy"   = var.managedby
@@ -302,7 +302,7 @@ resource "aws_nat_gateway" "private" {
   tags = merge(
     var.tags,
     {
-      "Name"        = format("%s%s%s-nat-gateway", var.name, var.delimiter, element(var.availability_zones, count.index))
+      "Name"        = format("%s-private-%s%s-nat-gateway", var.name, var.delimiter, element(var.availability_zones, count.index))
       "Type"        = "private"
       "Environment" = var.environment
       "ManagedBy"   = var.managedby
@@ -335,7 +335,7 @@ resource "aws_flow_log" "private_subnet_flow_log" {
 
   tags = merge(
     {
-      "Name" = format("%s-subnet-flowlog", var.environment) # Example Name tag
+      "Name" = format("%s-private-subnet-flowlog", var.name) # Example Name tag
     },
     var.extra_private_tags # Additional tags as per your setup
   )
@@ -359,7 +359,7 @@ resource "aws_subnet" "database" {
   tags = merge(
     var.tags,
     {
-      "Name"        = format("%s%s%s", var.name, var.delimiter, element(var.availability_zones, count.index))
+      "Name"        = format("database-subnet%s%s", var.delimiter, element(var.availability_zones, count.index))
       "AZ"          = element(var.availability_zones, count.index)
       "Type"        = "database"
       "Environment" = var.environment
@@ -437,7 +437,7 @@ resource "aws_route_table" "database" {
   tags = merge(
     var.tags,
     {
-      "Name"        = format("%s%s%s-rt", var.name, var.delimiter, element(var.availability_zones, count.index))
+      "Name"        = format("%s-database-%s%s-rt", var.name, var.delimiter, element(var.availability_zones, count.index))
       "Type"        = "database"
       "Environment" = var.environment
       "ManagedBy"   = var.managedby
@@ -485,7 +485,7 @@ resource "aws_flow_log" "database_subnet_flow_log" {
   tags = merge(
     var.tags, # Agar aap globally tags use kar rahe hain to
     {
-      "Name"        = format("%s-subnet-flowlog", var.name)
+      "Name"        = format("%s-database-subnet-flowlog", var.name)
       "Type"        = "database"
       "Environment" = var.environment
       "ManagedBy"   = var.managedby
