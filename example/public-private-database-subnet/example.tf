@@ -7,7 +7,7 @@ provider "aws" {
 ## Vpc Module call.
 ##=============================================================================
 module "vpc" {
-  source     = "https://github.com/opszero/terraform-aws-subnet.git"
+  source     = "git@github.com:opszero/terraform-aws-vpc?ref=v1.0.0"
   name       = "test"
   cidr_block = "10.0.0.0/16"
 }
